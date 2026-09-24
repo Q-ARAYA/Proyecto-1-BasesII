@@ -1,5 +1,7 @@
-# [NOMBRE DEL PROYECTO]
-### Nombre y carné de los integrantes: 
+# [Proyecto I - Bases de Datos II]
+### Nombre y carné de los integrantes:
+Quiriat Mata
+2023379891
 
 
 ### Estado del proyecto:
