@@ -69,7 +69,7 @@ El repositorio puede permanecer en la carpeta sincronizada de Windows y abrirse 
 Ubuntu/WSL. Para ubicarse en él:
 
 ```bash
-cd "/mnt/c/Users/quiri/OneDrive/Documents/Proyectos TEC/Bases II/Proyecto-1-BasesII"
+cd "Proyecto-1-BasesII"
 code .
 ```
 
@@ -128,7 +128,7 @@ Mantén SQL Server iniciado y abre dos terminales Ubuntu/WSL desde VS Code.
 **Terminal 1 — API**
 
 ```bash
-cd "/mnt/c/Users/quiri/OneDrive/Documents/Proyectos TEC/Bases II/Proyecto-1-BasesII/Api"
+cd "Proyecto-1-BasesII/Api"
 npm install
 npm run check
 npm run dev
@@ -145,7 +145,7 @@ curl http://localhost:3000/api/health/ready
 **Terminal 2 — sitio web**
 
 ```bash
-cd "/mnt/c/Users/quiri/OneDrive/Documents/Proyectos TEC/Bases II/Proyecto-1-BasesII/WebSite"
+cd "Proyecto-1-BasesII/WebSite"
 npm install
 npm run dev
 ```
