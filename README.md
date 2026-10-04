@@ -11,10 +11,9 @@ transmite los parámetros y resultados a la interfaz React.
 
 ## Estado del proyecto
 
-La solución está implementada e integrada localmente con SQL Server 2022 en Linux,
+Excelente. La solución está implementada e integrada localmente con SQL Server 2022 en Linux,
 ejecutándose en Docker Engine dentro de Ubuntu 24.04/WSL 2. Los flujos principales se
-probaron con WideWorldImporters. La revisión final de filtros de reportes y la grabación
-del video de demostración quedan como tareas de entrega.
+probaron con WideWorldImporters.
 
 ### Objetivos logrados
 
