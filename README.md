@@ -164,5 +164,4 @@ volumen y sus datos.
 
 ## Video de demostración
 
-Pendiente de grabar y publicar. Agregar aquí el enlace al video narrado cuando esté
-disponible.
+https://youtu.be/j1cjJLyT1D0
