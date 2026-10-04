@@ -1,0 +1,26 @@
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# SQL Server backups and local database files
+*.bak
+*.mdf
+*.ldf
+*.trn
+
+# Editors and operating systems
+.vscode/*.log
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build outputs
+bin/
+obj/
+node_modules/
+dist/
+coverage/
+
+# Temporary previews rendered while reviewing the assignment PDF
+/tmp/pdfs/
