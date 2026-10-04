@@ -1,27 +1,10 @@
-SELECT PersonID, FullName
-FROM Application.People
-WHERE PersonID = 8;
+USE [WideWorldImporters];
+GO
 
-SELECT CityID, CityName
-FROM Application.Cities
-WHERE CityID = 70101;
+SELECT DB_NAME() AS BaseActual,
+       OBJECT_ID(N'app.usp_StockItems_List', N'P') AS Procedimiento;
 
-SELECT CustomerCategoryID, CustomerCategoryName
-FROM Sales.CustomerCategories
-WHERE CustomerCategoryName = N'Agent';
+GO
 
-SELECT DeliveryMethodID, DeliveryMethodName
-FROM Application.DeliveryMethods
-WHERE DeliveryMethodName = N'Post';
-
-SELECT TOP (20)
-    c.CityID,
-    c.CityName
-FROM Application.Cities AS c
-WHERE EXISTS (
-    SELECT 1
-    FROM Sales.Customers AS sc
-    WHERE sc.DeliveryCityID = c.CityID
-       OR sc.PostalCityID = c.CityID
-)
-ORDER BY c.CityName;
+EXEC [app].[usp_StockItems_List]
+    @MaxQuantityOnHand = 25;

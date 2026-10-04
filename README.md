@@ -1,132 +1,148 @@
-# Proyecto 1 - Bases de Datos II
+# Proyecto 1 — Bases de Datos II
 
-Aplicación web para consultar y presentar datos de **WideWorldImporters**. El
-trabajo de búsqueda, filtrado y agregación debe resolverse en SQL Server mediante
-procedimientos almacenados; la API recibe parámetros y devuelve resultados a la
-interfaz. Se seguirá la arquitectura de la [Tarea 1: API sobre AdventureWorks](https://github.com/Q-ARAYA/Tarea-1-Bases-API): Node.js, Express, `mssql`, procedimientos almacenados y sinónimos.
+Sistema web conectado a **WideWorldImporters** para consultar clientes, proveedores,
+inventario y ventas, además de ejecutar diez reportes estadísticos. SQL Server realiza
+las consultas y agregaciones mediante procedimientos almacenados; la API Node.js
+transmite los parámetros y resultados a la interfaz React.
 
 ## Integrante
 
-- Quiriat Mata — 2023379891
+- **Quiriat Mata** — **Carnet: 2023379891**
 
-## Requisitos del proyecto
+## Estado del proyecto
 
-- SQL Server y base de ejemplo WideWorldImporters.
-- Módulos de clientes, proveedores, inventario/productos y ventas.
-- Diez reportes/consultas estadísticas indicados en el enunciado.
-- Sinónimos de seguridad y procedimientos almacenados; transacciones con
-  `BEGIN TRANSACTION`, `COMMIT` y `ROLLBACK` donde haya escrituras.
-- Aplicación web, API, validación y presentación clara de errores.
-- Video de demostración con narración y enlace en este README.
+La solución está implementada e integrada localmente con SQL Server 2022 en Linux,
+ejecutándose en Docker Engine dentro de Ubuntu 24.04/WSL 2. Los flujos principales se
+probaron con WideWorldImporters. La revisión final de filtros de reportes y la grabación
+del video de demostración quedan como tareas de entrega.
 
-La matriz de requisitos, comprobaciones verificables, alcance técnico y decisiones
-de modelado está en [PLAN-Y-REQUISITOS.md](PLAN-Y-REQUISITOS.md).
+### Objetivos logrados
 
-## Entorno local: Windows + WSL 2 + Docker Engine + VS Code
+- Configurar Ubuntu/WSL 2 y Docker Engine para ejecutar SQL Server sobre Linux.
+- Restaurar y consultar WideWorldImporters desde la extensión MSSQL de VS Code.
+- Crear el esquema `app`, 25 sinónimos y procedimientos almacenados para los módulos,
+  catálogos, paginación y diez reportes.
+- Implementar una API REST con Node.js, Express y `mssql`, parámetros tipados,
+  validaciones, manejo de errores y rutas de salud.
+- Implementar una interfaz React, Vite y Material UI con resumen, filtros,
+  listados, detalles y formularios de clientes.
+  
+## Módulos disponibles
 
-SQL Server se ejecuta como contenedor **Linux** con Docker Engine instalado
-directamente dentro de Ubuntu/WSL, igual que en la tarea anterior. No hace falta
-crear una VM aparte ni instalar Docker Desktop. VS Code se conecta a Ubuntu con
-la extensión WSL. El repositorio permanece en la carpeta sincronizada de Windows.
+- **Resumen:** conteos del sistema y estado de conexión con la API/base de datos.
+- **Clientes:** filtros, detalle y operaciones de alta, edición y eliminación.
+- **Proveedores:** filtros, lista y detalle.
+- **Inventario:** filtros por nombre, grupo y existencias mínima/máxima; detalle de
+  producto y proveedor.
+- **Ventas:** filtros por cliente, fechas y monto; detalle de factura y líneas.
+- **Estadísticas:** diez reportes calculados en SQL Server, con filtros y paginación
+  de resultados en pantalla.
 
-### 1. Instalar herramientas en Windows
+## Tecnologías y estructura
 
-1. En PowerShell como administrador, instalar WSL y Ubuntu:
+- SQL Server 2022 Developer sobre Linux en Docker Engine/WSL 2.
+- API: Node.js, Express y `mssql`.
+- Sitio web: React, Vite y Material UI.
+- SQL: sinónimos y procedimientos almacenados bajo el esquema `app`.
 
-   ```powershell
-   wsl --install -d Ubuntu-24.04
-   ```
+```text
+Api/       API REST
+Script/    Sinónimos, procedimientos y consultas SQL
+WebSite/   Interfaz web
+compose.yaml
+           Contenedor SQL Server y volumen persistente
+```
 
-   Reinicia si Windows lo solicita y completa la creación del usuario de Ubuntu.
-2. Desde Ubuntu instala y arranca Docker Engine y Compose:
+La arquitectura y los parámetros de la API continúan el patrón empleado en la
+[Tarea 1: API sobre AdventureWorks](https://github.com/Q-ARAYA/Tarea-1-Bases-API):
+pool SQL compartido, variables de entorno y procedimientos con parámetros tipados.
+Se adaptaron las entidades y consultas a WideWorldImporters.
 
-   ```bash
-   sudo apt update
-   sudo apt install -y docker.io docker-compose-v2
-   sudo service docker start
-   docker --version
-   docker compose version
-   ```
+## Requisitos locales
 
-   Si Docker indica permiso denegado, antepón `sudo` a los comandos `docker`.
-   El servicio puede necesitar `sudo service docker start` cada vez que se
-   reinicia WSL, como en la tarea anterior.
-3. Instala VS Code y las extensiones recomendadas (`.vscode/extensions.json`).
-   Desde Ubuntu, abre el repositorio con VS Code y Remote - WSL para que las
-   terminales y Node.js se ejecuten dentro de Linux:
+- Windows con WSL 2 y Ubuntu 24.04.
+- Docker Engine y Docker Compose instalados dentro de Ubuntu/WSL.
+- VS Code con las extensiones **WSL** y **SQL Server (mssql)**.
+- Node.js **20.19 o posterior** (se recomienda Node 22).
 
-   ```bash
-   cd "/mnt/c/Users/quiri/OneDrive/Documents/Proyectos TEC/Bases II/Proyecto-1-BasesII"
-   code .
-   ```
+El repositorio puede permanecer en la carpeta sincronizada de Windows y abrirse desde
+Ubuntu/WSL. Para ubicarse en él:
 
-### 2. Configurar el contenedor de SQL Server
+```bash
+cd "/mnt/c/Users/quiri/OneDrive/Documents/Proyectos TEC/Bases II/Proyecto-1-BasesII"
+code .
+```
 
-Desde la raíz del repositorio, en una terminal Ubuntu/WSL de VS Code:
+## Preparar SQL Server y WideWorldImporters
+
+En la raíz del repositorio, dentro de Ubuntu/WSL, crea la configuración local y define
+una contraseña fuerte para SQL Server:
 
 ```bash
 cp .env.example .env
 ```
 
-Edita `.env` y reemplaza el valor de `MSSQL_SA_PASSWORD` por una contraseña
-local fuerte. `.env` está ignorado por Git.
+Edita `.env` y cambia `MSSQL_SA_PASSWORD`. No publiques ese archivo ni la copia de
+seguridad `.bak`; ambos están excluidos de Git.
+
+Inicia Docker y el contenedor:
 
 ```bash
+sudo service docker start
 sudo docker compose up -d
 sudo docker compose ps
-sudo docker compose logs -f sqlserver
 ```
 
-El primer inicio descarga la imagen y puede tardar. Espera a que el servicio
-aparezca como `healthy`. SQL Server Developer escucha solo en tu máquina en
-`localhost,1433`; usuario `sa`, contraseña en `.env`. En la extensión MSSQL de
-VS Code, acepta confiar en el certificado de desarrollo si lo solicita.
+Espera hasta que `basesii-sqlserver` aparezca como `healthy`. El puerto local es
+`127.0.0.1:1433`; el usuario es `sa` y la contraseña está en `.env`.
 
-Para detener el motor: `sudo docker compose down`. Los datos sobreviven gracias al
-volumen nombrado. Para borrar también permanentemente esos datos locales:
-`sudo docker compose down -v`.
+Restaura la base de ejemplo **WideWorldImporters** una sola vez en el contenedor. El
+archivo de respaldo oficial debe copiarse al contenedor; antes de restaurar, ejecuta
+`RESTORE FILELISTONLY` para consultar los nombres lógicos incluidos en ese respaldo y
+úsalos en el comando `RESTORE DATABASE`. No incluyas el respaldo en este repositorio.
+Conéctate desde VS Code a `localhost`, selecciona `WideWorldImporters` y, si la
+extensión lo solicita, activa **Trust server certificate** para el certificado local
+de desarrollo.
 
-### 3. WideWorldImporters
+## Desplegar los objetos SQL
 
-Descarga `WideWorldImporters-Full.bak` desde la versión enlazada en el enunciado
-y guárdalo localmente (los `.bak` están excluidos de Git). La base de datos deberá
-restaurarse en el contenedor una vez que el motor esté iniciado. Antes de preparar
-el script de restauración hay que consultar los nombres lógicos de archivos del
-respaldo con `RESTORE FILELISTONLY`, porque varían según el backup. No subas el
-respaldo al repositorio.
+Con MSSQL conectado a `WideWorldImporters`, ejecuta los scripts en este orden:
 
-## Tecnología y patrones que se reutilizan de la Tarea 1
+1. [`Script/synonyms.sql`](Script/synonyms.sql)
+2. [`Script/customers-read.sql`](Script/customers-read.sql)
+3. [`Script/customers-write.sql`](Script/customers-write.sql)
+4. [`Script/suppliers-read.sql`](Script/suppliers-read.sql)
+5. [`Script/stock-items-read.sql`](Script/stock-items-read.sql)
+6. [`Script/sales-read.sql`](Script/sales-read.sql)
+7. [`Script/lookups.sql`](Script/lookups.sql)
+8. [`Script/reports.sql`](Script/reports.sql)
 
-- **Se conserva:** Node.js/Express, el paquete `mssql`, configuración mediante variables de entorno, un pool SQL compartido, parámetros tipados y llamadas a sinónimos de procedimientos almacenados.
-- **Se conserva:** scripts SQL separados para procedimientos y sinónimos; los SP usan `SET NOCOUNT ON` y dejan a la base de datos el filtrado y la transformación.
-- **Se adapta:** las rutas de productos de AdventureWorks se sustituyen por los módulos de WideWorldImporters: clientes, proveedores, productos, ventas y reportes.
-- **Se adapta:** escrituras con transacciones, `TRY/CATCH`, `COMMIT` y `ROLLBACK`, como exige el nuevo enunciado.
-- **No se copian:** consultas, nombres de tablas/SP/sinónimos, campos ni datos propios de AdventureWorks. Todo se basará en el esquema de WideWorldImporters.
+Las escrituras de clientes usan transacciones y `TRY/CATCH` para confirmar o revertir
+los cambios. Los scripts empiezan con `USE [WideWorldImporters]`; verifica que la base
+restaurada tenga ese nombre.
 
-Referencias del código anterior: [`server.js`](https://github.com/Q-ARAYA/Tarea-1-Bases-API/blob/main/server.js), [`db.js`](https://github.com/Q-ARAYA/Tarea-1-Bases-API/blob/main/db.js) y [`sql_scripts/`](https://github.com/Q-ARAYA/Tarea-1-Bases-API/tree/main/sql_scripts).
+## Ejecutar la solución
 
-## Estructura
+Mantén SQL Server iniciado y abre dos terminales Ubuntu/WSL desde VS Code.
 
-```text
-Api/              Servicio HTTP Node.js/Express
-Script/           Esquema, sinónimos, procedimientos y ejemplos SQL
-WebSite/          Interfaz web
-compose.yaml      SQL Server Linux para desarrollo
+**Terminal 1 — API**
+
+```bash
+cd "/mnt/c/Users/quiri/OneDrive/Documents/Proyectos TEC/Bases II/Proyecto-1-BasesII/Api"
+npm install
+npm run check
+npm run dev
 ```
 
-Las carpetas preexistentes `codigo/`, `proyectos/` y `Script sql/` se conservan
-como material inicial del repositorio.
+La API escucha en `http://localhost:3000/api`. Comprueba su estado y conexión a la
+base de datos con:
 
-## Iniciar la API
+```bash
+curl http://localhost:3000/api/health/live
+curl http://localhost:3000/api/health/ready
+```
 
-Con SQL Server arriba y los procedimientos ya desplegados, desde WSL abre una
-terminal en `Api/` y ejecuta `npm install` y `npm run dev`. La API lee la
-configuración del `.env` ubicado en la raíz. La guía de rutas, parámetros,
-respuestas y configuración se encuentra en [Api/README.md](Api/README.md).
-
-## Iniciar la interfaz web
-
-En otra terminal Ubuntu/WSL de VS Code:
+**Terminal 2 — sitio web**
 
 ```bash
 cd "/mnt/c/Users/quiri/OneDrive/Documents/Proyectos TEC/Bases II/Proyecto-1-BasesII/WebSite"
@@ -134,26 +150,20 @@ npm install
 npm run dev
 ```
 
-Abre `http://localhost:5173`. La interfaz se conecta a `http://localhost:3000/api`;
-consulta [WebSite/README.md](WebSite/README.md) para el alcance de cada pantalla.
+Abre [http://localhost:5173](http://localhost:5173). Para compilar la versión de
+entrega ejecuta `npm run build` dentro de `WebSite/`.
 
-## Plan de seis días
+Para detener SQL Server sin borrar sus datos: `sudo docker compose down`. El volumen
+`sqlserver-data` conserva la base. `sudo docker compose down -v` elimina también ese
+volumen y sus datos.
 
-Fecha límite del enunciado: **4 de octubre de 2026, 10:00 p. m.** Organiza cada
-día en un tracto pequeño: objetivo, implementación y anotación de pendientes.
+## Documentación complementaria
 
-| Día | Entrega del tracto |
-|---|---|
-| 1 — 28 sep | WSL 2, Docker, SQL Server Linux; descargar/restaurar WideWorldImporters; revisar esquema y repartir módulos. |
-| 2 — 29 sep | Conexión de API; sinónimos, permisos y procedimientos de clientes/proveedores; consultas de ejemplo. |
-| 3 — 30 sep | Procedimientos y pantallas de productos/inventario y ventas; parámetros y detalles. |
-| 4 — 1 oct | Reportes 1–5: agregaciones, `ROLLUP`, `DENSE_RANK` y `PARTITION BY`. |
-| 5 — 2 oct | Reportes 6–10, incluyendo rotación de inventario y método de envío favorito; pulir la interfaz y validaciones. |
-| 6 — 3 oct | Integración completa, revisar criterios/rúbrica, README y objetivos alcanzados; grabar y publicar el video. Dejar el 4 oct para revisión final y entrega antes de las 10 p. m. |
+- [Plan y matriz de requisitos](PLAN-Y-REQUISITOS.md)
+- [Descripción de la interfaz](WebSite/README.md)
+- [Scripts SQL](Script/)
 
-## Estado y video
+## Video de demostración
 
-- Objetivos alcanzados: WSL 2 con Ubuntu 24.04; Docker Engine y Compose; SQL Server 2022 en contenedor Linux; WideWorldImporters restaurada; conexión desde VS Code; 25 sinónimos; procedimientos de listas/detalles de los cuatro módulos, catálogos de filtros y diez reportes; paginación SQL; operaciones transaccionales de cliente verificadas con rollback.
-- Pendientes: API Express; interfaz React/MUI; validaciones integradas desde la interfaz; prueba de los cambios de cliente desde la aplicación; permisos limitados para el usuario de la API; completar los objetivos finales y el enlace al video narrado.
-- SQL: el orden de ejecución y los ejemplos están documentados en [Script/README.md](Script/README.md). Los procedimientos fueron creados en la instancia local y se ejecutaron con resultados sobre WideWorldImporters; revisa esa instancia antes de volver a desplegar.
-- Video de demostración: _agregar enlace de YouTube al finalizar_.
+Pendiente de grabar y publicar. Agregar aquí el enlace al video narrado cuando esté
+disponible.

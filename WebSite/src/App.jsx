@@ -31,6 +31,7 @@ import WarningAmberRounded from "@mui/icons-material/WarningAmberRounded";
 import { apiRequest, queryApi } from "./api.js";
 
 const PAGE_SIZE = 25;
+const REPORT_PAGE_SIZE = 50;
 const NAV = [
   { id: "home", label: "Resumen", icon: DashboardRounded },
   { id: "customers", label: "Clientes", icon: Groups2Rounded, tag: "01" },
@@ -402,7 +403,7 @@ function FilterControl({ filter, value, lookups, onChange }) {
 function DataTable({ rows, columns, empty, onRowClick, action }) {
   return <TableContainer className="data-table-wrap"><Table stickyHeader size="small" aria-label="Resultados">
     <TableHead><TableRow>{columns.map((column) => <TableCell key={column.key} align={column.align || "left"} sx={{ minWidth: column.width }}>{column.label}</TableCell>)}{action && <TableCell align="right" width={70}> </TableCell>}</TableRow></TableHead>
-    <TableBody>{rows.map((row, index) => <TableRow hover key={row.InvoiceID || row.CustomerID || row.SupplierID || row.StockItemID || index} onClick={() => onRowClick?.(row)} className={onRowClick ? "clickable-row" : ""}>
+    <TableBody>{rows.map((row, index) => <TableRow hover key={row.InvoiceID ?? row.CustomerID ?? row.StockItemID ?? row.SupplierID ?? index} onClick={() => onRowClick?.(row)} className={onRowClick ? "clickable-row" : ""}>
       {columns.map((column) => <TableCell key={column.key} align={column.align || "left"} className={column.primary ? "primary-cell" : ""}><CellValue value={row[column.key]} column={column} /></TableCell>)}
       {action && <TableCell align="right" onClick={(e) => e.stopPropagation()}>{action(row)}</TableCell>}
     </TableRow>)}
@@ -539,12 +540,13 @@ function ReportsPage({ lookups }) {
   const [filters, setFilters] = useState({});
   const [years, setYears] = useState([]);
   const [rows, setRows] = useState([]);
+  const [resultPage, setResultPage] = useState(0);
   const [hasRun, setHasRun] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [yearsLoading, setYearsLoading] = useState(false);
   useEffect(() => {
-    setFilters({}); setRows([]); setHasRun(false); setError("");
+    setFilters({}); setRows([]); setResultPage(0); setHasRun(false); setError("");
   }, [selectedId]);
   useEffect(() => {
     if (!selected.dataset) { setYears([]); return; }
@@ -555,7 +557,7 @@ function ReportsPage({ lookups }) {
     return () => { live = false; };
   }, [selected.dataset]);
   const submit = async (event) => {
-    event.preventDefault(); setLoading(true); setError(""); setHasRun(true);
+    event.preventDefault(); setLoading(true); setError(""); setResultPage(0); setHasRun(true);
     try {
       const params = {};
       for (const field of selected.filters) if (filters[field.key] !== "" && filters[field.key] !== undefined) params[field.key] = filters[field.key];
@@ -571,10 +573,10 @@ function ReportsPage({ lookups }) {
     <Box className="reports-layout">
       <Paper elevation={0} className="report-selector"><Typography className="eyebrow">REPORTES DISPONIBLES</Typography>{REPORTS.map((report, index) => <Button key={report.id} onClick={() => setSelectedId(report.id)} className={`report-choice ${selectedId === report.id ? "selected" : ""}`}><span className="report-index">{String(index + 1).padStart(2, "0")}</span><span className="report-choice-copy"><strong>{report.name}</strong><small>{report.group}</small></span><ChevronRightRounded className="report-chevron" /></Button>)}</Paper>
       <Box className="report-workspace"><Paper elevation={0} className="report-intro"><Box className="report-intro-icon"><BarChartRounded /></Box><Box><Typography className="eyebrow">{selected.group} · REPORTE {String(REPORTS.indexOf(selected) + 1).padStart(2, "0")}</Typography><Typography variant="h4" fontWeight={800}>{selected.name}</Typography><Typography color="text.secondary">{selected.subtitle}</Typography></Box></Paper>
-        <Paper component="form" onSubmit={submit} elevation={0} className="report-filter-card"><Box className="report-filter-head"><Box><Typography variant="subtitle1" fontWeight={800}>Parámetros de consulta</Typography><Typography variant="body2" color="text.secondary">Los filtros se aplican en SQL Server.</Typography></Box>{yearsLoading && <CircularProgress size={19} />}</Box><Box className="report-filter-grid">{selected.filters.map((filter) => <ReportFilter key={filter.key} filter={filter} value={filters[filter.key] || ""} years={years} lookups={lookups} onChange={(value) => setFilters((old) => ({ ...old, [filter.key]: value }))} />)}</Box><Box className="report-filter-actions"><Button type="button" color="inherit" onClick={() => { setFilters({}); setRows([]); setHasRun(false); }}>Limpiar</Button><Button type="submit" variant="contained" startIcon={<ShowChartRounded />} disabled={loading || yearsLoading}>{loading ? "Consultando…" : "Ejecutar reporte"}</Button></Box></Paper>
+        <Paper component="form" onSubmit={submit} elevation={0} className="report-filter-card"><Box className="report-filter-head"><Box><Typography variant="subtitle1" fontWeight={800}>Parámetros de consulta</Typography><Typography variant="body2" color="text.secondary">Los filtros se aplican en SQL Server.</Typography></Box>{yearsLoading && <CircularProgress size={19} />}</Box><Box className="report-filter-grid">{selected.filters.map((filter) => <ReportFilter key={filter.key} filter={filter} value={filters[filter.key] || ""} years={years} lookups={lookups} onChange={(value) => setFilters((old) => ({ ...old, [filter.key]: value }))} />)}</Box><Box className="report-filter-actions"><Button type="button" color="inherit" onClick={() => { setFilters({}); setRows([]); setResultPage(0); setHasRun(false); }}>Limpiar</Button><Button type="submit" variant="contained" startIcon={<ShowChartRounded />} disabled={loading || yearsLoading}>{loading ? "Consultando…" : "Ejecutar reporte"}</Button></Box></Paper>
         {selected.id === "inventory-rotation" && <Alert severity="info" className="formula-note">Rotación (días) = inventario promedio ponderado por tiempo × días del año ÷ unidades netas vendidas. Los productos sin ventas aparecen sin valor de rotación.</Alert>}
         {error && <Alert severity="error">{error}</Alert>}
-        <Paper elevation={0} className="table-card report-results"><Box className="table-card-head"><Box><Typography variant="h6">Resultados</Typography><Typography variant="body2" color="text.secondary">{hasRun ? `${rows.length.toLocaleString("es-CR")} filas devueltas por el procedimiento` : "Configura los filtros y ejecuta el reporte"}</Typography></Box>{hasRun && <Chip className="result-chip" label={rows.length ? "CONSULTA COMPLETA" : "SIN RESULTADOS"} />}</Box>{loading && <LinearProgress />}<DataTable rows={rows} columns={reportColumns} empty={hasRun ? "El procedimiento no devolvió filas." : "Ejecuta el reporte para ver los resultados."} />{rows.length > 0 && <Typography className="sql-source-note">Los valores se recibieron directamente del procedimiento almacenado.</Typography>}</Paper>
+        <Paper elevation={0} className="table-card report-results"><Box className="table-card-head"><Box><Typography variant="h6">Resultados</Typography><Typography variant="body2" color="text.secondary">{hasRun ? `${rows.length.toLocaleString("es-CR")} filas devueltas por el procedimiento` : "Configura los filtros y ejecuta el reporte"}</Typography></Box>{hasRun && <Chip className="result-chip" label={rows.length ? "CONSULTA COMPLETA" : "SIN RESULTADOS"} />}</Box>{loading && <LinearProgress />}<DataTable rows={rows.slice(resultPage * REPORT_PAGE_SIZE, (resultPage + 1) * REPORT_PAGE_SIZE)} columns={reportColumns} empty={hasRun ? "El procedimiento no devolvió filas." : "Ejecuta el reporte para ver los resultados."} />{rows.length > 0 && <TablePagination component="div" count={rows.length} page={resultPage} onPageChange={(_event, nextPage) => setResultPage(nextPage)} rowsPerPage={REPORT_PAGE_SIZE} rowsPerPageOptions={[REPORT_PAGE_SIZE]} labelRowsPerPage="Filas por página" labelDisplayedRows={({ from, to, count }) => `${from}–${to} de ${count}`} />}{rows.length > 0 && <Typography className="sql-source-note">Los valores se recibieron directamente del procedimiento almacenado.</Typography>}</Paper>
       </Box>
     </Box>
   </>;
